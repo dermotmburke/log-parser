@@ -1,4 +1,4 @@
-Log Parser
+# Log Parser
 
 Running the application.
 

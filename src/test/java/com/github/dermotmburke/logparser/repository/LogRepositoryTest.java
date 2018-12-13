@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.github.dermotmburke.logparser.model.Log;
 import com.github.dermotmburke.logparser.model.LogEventState;
@@ -62,7 +63,37 @@ public class LogRepositoryTest {
         List<Log> results = logRepository.findAllByEventIdOrderByTimestamp(start.getEventId());
 
         assertThat(results).extracting("eventId", "state", "timestamp")
-                .containsExactly(tuple("scsmbstgra", LogEventState.STARTED, 1491377495212L),
-                        tuple("scsmbstgra", LogEventState.FINISHED, 1491377495217L));
+                .containsExactly(tuple(start.getEventId(), start.getState(), start.getTimestamp()),
+                        tuple(end.getEventId(), end.getState(), end.getTimestamp()));
+    }
+
+    @Test
+    @DisplayName("should Delete all by cacheId")
+    public void testDeleteAllByCacheId() {
+        Log start = new Log();
+        start.setEventId("scsmbstgra");
+        start.setHost("12345");
+        start.setTimestamp(1491377495212L);
+        start.setType(LogType.APPLICATION_LOG);
+        start.setState(LogEventState.STARTED);
+        start.setCacheId(UUID.randomUUID().toString());
+
+        logRepository.save(start);
+
+        Log end = new Log();
+        end.setEventId("scsmbstgra");
+        end.setHost("12345");
+        end.setTimestamp(1491377495217L);
+        end.setType(LogType.APPLICATION_LOG);
+        end.setState(LogEventState.FINISHED);
+        start.setCacheId(UUID.randomUUID().toString());
+
+        logRepository.save(end);
+
+        logRepository.deleteAllByCacheId(start.getCacheId());
+        List<Log> results = logRepository.findAllByEventIdOrderByTimestamp(start.getEventId());
+
+        assertThat(results).extracting("eventId", "state", "timestamp")
+                .containsExactly(tuple(end.getEventId(), end.getState(), end.getTimestamp()));
     }
 }

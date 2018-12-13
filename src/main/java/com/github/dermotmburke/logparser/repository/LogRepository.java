@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface LogRepository extends CrudRepository<Log, String> {
     List<Log> findAllByEventIdOrderByTimestamp(String eventId);
+
+    void deleteAllByCacheId(String cacheId);
 }

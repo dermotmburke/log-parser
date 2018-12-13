@@ -20,6 +20,7 @@ public class Log {
     private LogEventState state;
     private LogType type;
     private String host;
+    private String cacheId;
     private long timestamp;
 
     public Long getKey() {
@@ -62,6 +63,14 @@ public class Log {
         this.host = host;
     }
 
+    public String getCacheId() {
+        return cacheId;
+    }
+
+    public void setCacheId(String cacheId) {
+        this.cacheId = cacheId;
+    }
+
     public long getTimestamp() {
         return timestamp;
     }
@@ -78,6 +87,7 @@ public class Log {
                 ", state=" + state +
                 ", type=" + type +
                 ", host='" + host + '\'' +
+                ", cacheId='" + cacheId + '\'' +
                 ", timestamp=" + timestamp +
                 '}';
     }

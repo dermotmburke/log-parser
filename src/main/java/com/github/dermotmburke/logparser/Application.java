@@ -15,8 +15,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import javax.transaction.Transactional;
 import java.io.FileReader;
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootApplication
 public class Application implements CommandLineRunner {
@@ -34,29 +36,40 @@ public class Application implements CommandLineRunner {
 	private EventRepository eventRepository;
 
 	@Override
+	@Transactional
 	public void run(String... args) throws Exception {
 		if(args.length == 0){
 			LOGGER.error("Log file path not provided");
 			return;
 		}
+		String cacheId = generateCacheId();
 		LOGGER.info("Parsing log file {} ", args[0]);
 		JsonReader reader = new JsonReader(new FileReader(args[0]));
 		Gson gson = new GsonBuilder().create();
 		reader.beginArray();
 		while (reader.hasNext()) {
 			Log logEvent = gson.fromJson(reader, Log.class);
+			logEvent.setCacheId(cacheId);
 			LOGGER.debug("Read log {} ", logEvent);
 			logRepository.save(logEvent);
-			List<Log> allByEventId = logRepository.findAllByEventIdOrderByTimestamp(logEvent.getEventId());
-			if(allByEventId.size() == 2){
-				Event event = new Event(allByEventId.get(0), allByEventId.get(1));
-				LOGGER.debug("Event created {} ", event);
-				eventRepository.save(event);
-			}
+			generateEvent(logEvent);
 		}
 		LOGGER.info("Log parsing complete");
 		reader.close();
-		LOGGER.info("Clearing log table for next run");
-		logRepository.deleteAll();
+		LOGGER.info("Clearing cache");
+		logRepository.deleteAllByCacheId(cacheId);
+	}
+
+	private void generateEvent(Log logEvent) {
+		List<Log> allByEventId = logRepository.findAllByEventIdOrderByTimestamp(logEvent.getEventId());
+		if(allByEventId.size() == 2){
+			Event event = new Event(allByEventId.get(0), allByEventId.get(1));
+			LOGGER.debug("Event created {} ", event);
+			eventRepository.save(event);
+		}
+	}
+
+	private String generateCacheId() {
+		return UUID.randomUUID().toString();
 	}
 }

@@ -1,5 +1,7 @@
 # Log Parser
 
+[![Build Status](https://travis-ci.org/dermotmburke/log-parser.svg?branch=master)](https://travis-ci.org/dermotmburke/log-parser)
+
 Running the application.
 
 ```
